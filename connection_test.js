@@ -10,6 +10,50 @@ const rl = readline.createInterface({
 
 Customer.hasMany(Order);
 
+
+const performSelect = async () => {
+  rl.question(
+    "Choose select option: 1. Select by Customer ID  2. Select All Customers: ",
+    async (choice) => {
+      if (choice === "1") {
+        // Select by Customer ID
+        rl.question("Enter Customer ID: ", async (id) => {
+          try {
+            const customer = await Customer.findByPk(id, { include: Order }); // Include associated orders
+            if (!customer) {
+              console.log(`Customer with ID ${id} not found.`);
+            } else {
+              console.log("Customer Details:", customer.toJSON());
+            }
+          } catch (err) {
+            console.error("Error fetching customer:", err);
+          }
+          promptAgain(); // Return to main menu
+        });
+      } else if (choice === "2") {
+        // Select All Customers
+        try {
+          const customers = await Customer.findAll({ include: Order }); // Include associated orders
+          if (customers.length === 0) {
+            console.log("No customers found.");
+          } else {
+            console.log("All Customers:");
+            customers.forEach((customer) => {
+              console.log(customer.toJSON()); // Print each customer and their associated orders
+            });
+          }
+        } catch (err) {
+          console.error("Error fetching customers:", err);
+        }
+        promptAgain(); // Return to main menu
+      } else {
+        console.log("Invalid choice, try again.");
+        promptAgain(); 
+      }
+    }
+  );
+};
+
 const performInsert = async () => {
   rl.question("Enter customer name: ", async (name) => {
     rl.question("Enter customer email: ", async (email) => {
@@ -96,12 +140,15 @@ const promptAgain = () => {
       performUpdate();
     } else if (action === "3") {
       performDelete();
-    } else if (action === "4") {
-      console.log("Exiting the program...");
-      rl.close(); // Exit the program
+    }else if (action === "4") {
+      performSelect();
+      rl.close(); 
+    }else if (action === "5") {
+      console.log("Exiting the program.");
+      rl.close(); 
     } else {
       console.log("Invalid choice, try again.");
-      promptAgain(); // Prompt again if input is invalid
+      promptAgain(); 
     }
   });
 };
